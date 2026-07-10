@@ -341,7 +341,7 @@ function renderEventForm(container, editEvent) {
                 </div>
                 <div class="form-group">
                   <label class="form-label">Valor evento (calculado)</label>
-                  <input type="text" class="input computed-field" value="${formatCurrency(fin.valorEvento)}" readonly>
+                  <input type="text" class="input computed-field" id="valorEventoCalculado" value="${formatCurrency(fin.valorEvento)}" readonly>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Cidade</label>
@@ -472,6 +472,9 @@ function renderEventForm(container, editEvent) {
   function updateFinancialDisplay() {
     updateExtraRowTotals();
     syncFormToEvent();
+    const fin = getFinancialSummary();
+    const valorEventoEl = container.querySelector('#valorEventoCalculado');
+    if (valorEventoEl) valorEventoEl.value = formatCurrency(fin.valorEvento);
     const summary = container.querySelector('#financialSummary');
     if (summary) summary.innerHTML = renderFinancialSummary();
   }
