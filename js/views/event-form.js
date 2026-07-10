@@ -340,7 +340,7 @@ function renderEventForm(container, editEvent) {
                   <input type="number" class="input calc-trigger" name="numeroParticipantes" value="${event.numeroParticipantes}" min="0">
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Valor evento (calculado)</label>
+                  <label class="form-label">Valor restaurante (calculado)</label>
                   <input type="text" class="input computed-field" id="valorEventoCalculado" value="${formatCurrency(fin.valorEvento)}" readonly>
                 </div>
                 <div class="form-group">
