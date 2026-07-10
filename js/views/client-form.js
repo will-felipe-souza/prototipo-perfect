@@ -95,6 +95,7 @@ function renderClientForm(container, editClient) {
     });
 
     container.querySelector('#addSolicitante')?.addEventListener('click', () => {
+      syncGeneralFields();
       syncSolicitantes();
       solicitantes.push('');
       render();
@@ -102,6 +103,7 @@ function renderClientForm(container, editClient) {
 
     container.querySelectorAll('.remove-solicitante').forEach(btn => {
       btn.addEventListener('click', () => {
+        syncGeneralFields();
         syncSolicitantes();
         solicitantes.splice(parseInt(btn.dataset.index, 10), 1);
         render();
@@ -109,6 +111,7 @@ function renderClientForm(container, editClient) {
     });
 
     container.querySelector('#addProduto')?.addEventListener('click', () => {
+      syncGeneralFields();
       syncProdutos();
       produtos.push('');
       render();
@@ -116,6 +119,7 @@ function renderClientForm(container, editClient) {
 
     container.querySelectorAll('.remove-produto').forEach(btn => {
       btn.addEventListener('click', () => {
+        syncGeneralFields();
         syncProdutos();
         produtos.splice(parseInt(btn.dataset.index, 10), 1);
         render();
@@ -126,6 +130,17 @@ function renderClientForm(container, editClient) {
       e.preventDefault();
       handleSubmit();
     });
+  }
+
+  function syncGeneralFields() {
+    const form = container.querySelector('#clientForm');
+    if (!form) return;
+    const data = new FormData(form);
+    client.nome = data.get('nome') || '';
+    client.feeTipo = data.get('feeTipo') || client.feeTipo;
+    client.feeValor = data.get('feeValor');
+    client.impostosPercentual = data.get('impostosPercentual');
+    client.camposObrigatorios = [...form.querySelectorAll('[name="camposObrigatorios"]:checked')].map(cb => cb.value);
   }
 
   function syncSolicitantes() {
