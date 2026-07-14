@@ -3,7 +3,9 @@ const ROUTES = {
   '/eventos': { title: 'Eventos', render: renderEventList, action: { label: 'Novo evento', href: '#/eventos/novo' } },
   '/eventos/novo': { title: 'Novo Evento', render: (c) => renderEventForm(c) },
   '/clientes': { title: 'Clientes', render: renderClientList, action: { label: 'Novo cliente', href: '#/clientes/novo' } },
-  '/clientes/novo': { title: 'Novo Cliente', render: (c) => renderClientForm(c) }
+  '/clientes/novo': { title: 'Novo Cliente', render: (c) => renderClientForm(c) },
+  '/fechamentos': { title: 'Fechamento', render: renderFechamentoList, action: { label: 'Novo fechamento', href: '#/fechamentos/novo' } },
+  '/fechamentos/novo': { title: 'Novo Fechamento', render: (c) => renderFechamentoForm(c) }
 };
 
 function parseRoute() {
@@ -26,6 +28,12 @@ function parseRoute() {
     if (parts.length === 2) return { path: '/clientes/detail', params: { id: parts[1] } };
   }
 
+  if (parts[0] === 'fechamentos') {
+    if (parts.length === 1) return { path: '/fechamentos', params: {} };
+    if (parts[1] === 'novo') return { path: '/fechamentos/novo', params: {} };
+    if (parts.length === 2) return { path: '/fechamentos/detail', params: { id: parts[1] } };
+  }
+
   return { path: '/', params: {} };
 }
 
@@ -37,6 +45,7 @@ function updateSidebarActive(path) {
     if (route === '/') active = path === '/';
     else if (route === '/eventos') active = path.startsWith('/eventos');
     else if (route === '/clientes') active = path.startsWith('/clientes');
+    else if (route === '/fechamentos') active = path.startsWith('/fechamentos');
 
     item.classList.toggle('nav-item--active', active);
   });
@@ -69,6 +78,13 @@ function updateHeader(route) {
   if (route.path === '/clientes/editar') {
     titleEl.textContent = 'Editar Cliente';
     actionsEl.innerHTML = '';
+    return;
+  }
+
+  if (route.path === '/fechamentos/detail') {
+    const fechamento = getFechamentoById(route.params.id);
+    titleEl.textContent = fechamento ? fechamento.fechamentoId : 'Fechamento';
+    actionsEl.innerHTML = `<a href="#/fechamentos/novo" class="btn btn--primary">Novo fechamento</a>`;
     return;
   }
 
@@ -130,6 +146,11 @@ function render() {
         </div>
       `;
     }
+    return;
+  }
+
+  if (route.path === '/fechamentos/detail') {
+    renderFechamentoDetail(container, route.params.id);
     return;
   }
 

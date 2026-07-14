@@ -112,6 +112,9 @@
 .badge--aguardando_aprovacao { background: #ede9fe; color: #6d28d9; }
 .badge--concluido { background: #dcfce7; color: #15803d; }
 .badge--cancelado { background: #fee2e2; color: #b91c1c; }
+.badge--a_faturar { background: #fef3c7; color: #b45309; }
+.badge--faturado { background: #dbeafe; color: var(--status-faturado); }
+.badge--recebido { background: #dcfce7; color: #15803d; }
 
 /* Table */
 .table-wrapper {

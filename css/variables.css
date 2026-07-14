@@ -15,6 +15,9 @@
   --status-aguardando: #8b5cf6;
   --status-concluido: #22c55e;
   --status-cancelado: #ef4444;
+  --status-a-faturar: #f59e0b;
+  --status-faturado: #3b82f6;
+  --status-recebido: #22c55e;
 
   --sidebar-width: 240px;
   --header-height: 64px;
