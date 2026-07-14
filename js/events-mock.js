@@ -24,6 +24,9 @@ const MOCK_EVENTS = [
     telefoneMedico: '(34) 99972-3636',
     emailMedico: 'mmhueb@gmail.com',
     feeMedico: 800.00,
+    feeTipoEvento: 'fixo',
+    feeValorEvento: 3000,
+    impostosPercentualEvento: 15,
     extras: [
       { id: 'ext-1', tipo: 'Material', descricao: 'Folder e material gráfico', quantidade: 1, valorUnitario: 350, valor: 350 }
     ]
@@ -53,6 +56,9 @@ const MOCK_EVENTS = [
     telefoneMedico: '(21) 98765-4321',
     emailMedico: 'ricardo.alves@medmail.com',
     feeMedico: 600.00,
+    feeTipoEvento: 'percentual',
+    feeValorEvento: 12,
+    impostosPercentualEvento: 18,
     extras: []
   },
   {
@@ -80,6 +86,9 @@ const MOCK_EVENTS = [
     telefoneMedico: '(31) 99888-7766',
     emailMedico: 'juliana.martins@hospital.com',
     feeMedico: 500.00,
+    feeTipoEvento: 'fixo',
+    feeValorEvento: 2800,
+    impostosPercentualEvento: 15,
     extras: [
       { id: 'ext-2', tipo: 'Serviço', descricao: 'Coffee break extra', quantidade: 2, valorUnitario: 140, valor: 280 }
     ]
@@ -109,6 +118,9 @@ const MOCK_EVENTS = [
     telefoneMedico: '(11) 91234-5678',
     emailMedico: 'eduardo.campos@clinica.com',
     feeMedico: 700.00,
+    feeTipoEvento: 'fixo',
+    feeValorEvento: 3500,
+    impostosPercentualEvento: 17,
     extras: []
   },
   {
@@ -136,6 +148,9 @@ const MOCK_EVENTS = [
     telefoneMedico: '(48) 99111-2233',
     emailMedico: 'paulo.henrique@med.com',
     feeMedico: 0,
+    feeTipoEvento: 'fixo',
+    feeValorEvento: 2000,
+    impostosPercentualEvento: 12,
     extras: [
       { id: 'ext-3', tipo: 'Locação', descricao: 'Montagem estande', quantidade: 1, valorUnitario: 4500, valor: 4500 }
     ]

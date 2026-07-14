@@ -26,16 +26,20 @@ function renderEventForm(container, editEvent) {
     telefoneMedico: '',
     emailMedico: '',
     feeMedico: '',
+    feeTipoEvento: '',
+    feeValorEvento: '',
+    impostosPercentualEvento: '',
     extras: []
   };
 
   let activeTab = 0;
-  const tabs = ['Geral', 'Restaurante', 'Médico', 'Extras'];
+  const tabs = ['Geral', 'Restaurante', 'Médico', 'Extras', 'Financeiro'];
   const tabFields = {
     0: ['tipoEvento', 'clienteId', 'dataSolicitacao', 'nomeEvento'],
     1: ['contatoRestauranteNome', 'contatoRestauranteTelefone', 'nomeRestaurante', 'endereco'],
     2: ['medico', 'feeMedico'],
-    3: []
+    3: [],
+    4: []
   };
 
   const fieldTab = {
@@ -151,8 +155,23 @@ function renderEventForm(container, editEvent) {
       event.produto = '';
     }
 
+    applyClientFeeDefaults(true);
     updateSolicitanteSelect();
     updateProdutoSelect();
+  }
+
+  function applyClientFeeDefaults(force) {
+    const client = getClientById(event.clienteId);
+    if (!client) return;
+
+    const empty = (v) => v === undefined || v === null || v === '';
+    if (force || empty(event.feeTipoEvento)) event.feeTipoEvento = client.feeTipo || 'fixo';
+    if (force || empty(event.feeValorEvento)) event.feeValorEvento = client.feeValor;
+    if (force || empty(event.impostosPercentualEvento)) event.impostosPercentualEvento = client.impostosPercentual;
+  }
+
+  function getFeeValorLabel() {
+    return event.feeTipoEvento === 'percentual' ? 'Fee (%)' : 'Fee (R$)';
   }
 
   function getFinancialSummary() {
@@ -224,14 +243,41 @@ function renderEventForm(container, editEvent) {
   function renderFinancialSummary() {
     const fin = getFinancialSummary();
     return `
-      <div class="financial-summary">
-        <div class="financial-summary__row"><span>Valor evento</span><span>${formatCurrency(fin.valorEvento)}</span></div>
-        <div class="financial-summary__row"><span>Extras</span><span>${formatCurrency(fin.somaExtras)}</span></div>
-        <div class="financial-summary__row"><span>Fee médico</span><span>${formatCurrency(fin.feeMedico)}</span></div>
-        <div class="financial-summary__row"><span>Subtotal</span><span>${formatCurrency(fin.subtotal)}</span></div>
-        <div class="financial-summary__row"><span>Fee Perfect</span><span>${formatCurrency(fin.feeCliente)}</span></div>
-        <div class="financial-summary__row"><span>Impostos (${fin.impostosPct}%)</span><span>${formatCurrency(fin.impostos)}</span></div>
-        <div class="financial-summary__row financial-summary__row--total"><span>Valor Final (Budget)</span><span>${formatCurrency(fin.valorFinal)}</span></div>
+      <div class="section-title">Custos do evento</div>
+      <div class="financial-summary" id="financialCosts">
+        <div class="financial-summary__row"><span>Valor restaurante</span><span id="finValorRestaurante">${formatCurrency(fin.valorEvento)}</span></div>
+        <div class="financial-summary__row"><span>Fee do médico</span><span id="finFeeMedico">${formatCurrency(fin.feeMedico)}</span></div>
+        <div class="financial-summary__row"><span>Extras</span><span id="finExtras">${formatCurrency(fin.somaExtras)}</span></div>
+        <div class="financial-summary__row"><span>Subtotal</span><span id="finSubtotal">${formatCurrency(fin.subtotal)}</span></div>
+      </div>
+
+      <div class="section-title" style="margin-top: 24px;">Fee e impostos</div>
+      <p class="form-hint" style="margin-bottom: 12px;">Pré-preenchidos do cliente; podem ser ajustados neste evento.</p>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Tipo de fee</label>
+          <select class="select calc-trigger" name="feeTipoEvento" id="feeTipoEvento">
+            ${Object.entries(FEE_TIPO_LABELS).map(([val, label]) => `
+              <option value="${val}" ${event.feeTipoEvento === val ? 'selected' : ''}>${label}</option>
+            `).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="feeValorEventoLabel">${getFeeValorLabel()}</label>
+          <input type="number" class="input calc-trigger" name="feeValorEvento" id="feeValorEvento" value="${event.feeValorEvento}" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Impostos (%)</label>
+          <input type="number" class="input calc-trigger" name="impostosPercentualEvento" id="impostosPercentualEvento" value="${event.impostosPercentualEvento}" min="0" max="100" step="0.01">
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top: 24px;">Valor final</div>
+      <div class="financial-summary" id="financialTotals">
+        <div class="financial-summary__row"><span>Fee Perfect</span><span id="finFeePerfect">${formatCurrency(fin.feeCliente)}</span></div>
+        <div class="financial-summary__row"><span>Custo total</span><span id="finCustoTotal">${formatCurrency(fin.base)}</span></div>
+        <div class="financial-summary__row"><span>Impostos (<span id="finImpostosPct">${fin.impostosPct}</span>%)</span><span id="finImpostos">${formatCurrency(fin.impostos)}</span></div>
+        <div class="financial-summary__row financial-summary__row--total"><span>Valor Final (Budget)</span><span id="finBudget">${formatCurrency(fin.valorFinal)}</span></div>
       </div>
     `;
   }
@@ -247,6 +293,7 @@ function renderEventForm(container, editEvent) {
     if (!isEdit && event.tipoEvento && !event.eventoId) {
       event.eventoId = generateEventoId(event.tipoEvento);
     }
+    if (event.clienteId) applyClientFeeDefaults(false);
 
     const fin = getFinancialSummary();
 
@@ -392,10 +439,10 @@ function renderEventForm(container, editEvent) {
                 ${(event.extras || []).map((ex, i) => renderExtraRow(ex, i)).join('')}
               </div>
               <button type="button" class="btn btn--secondary" id="addExtra" style="margin-top: 8px;">+ Adicionar extra</button>
-              <div style="margin-top: 24px;">
-                <div class="section-title">Resumo financeiro</div>
-                <div id="financialSummary">${renderFinancialSummary()}</div>
-              </div>
+            </div>
+
+            <div class="tab-panel ${activeTab === 4 ? 'tab-panel--active' : ''}">
+              <div id="financialSummary">${renderFinancialSummary()}</div>
             </div>
 
             <div class="form-actions">
@@ -465,6 +512,9 @@ function renderEventForm(container, editEvent) {
       telefoneMedico: data.get('telefoneMedico'),
       emailMedico: data.get('emailMedico'),
       feeMedico: data.get('feeMedico'),
+      feeTipoEvento: data.get('feeTipoEvento') || event.feeTipoEvento,
+      feeValorEvento: data.get('feeValorEvento') !== null ? data.get('feeValorEvento') : event.feeValorEvento,
+      impostosPercentualEvento: data.get('impostosPercentualEvento') !== null ? data.get('impostosPercentualEvento') : event.impostosPercentualEvento,
       extras
     });
   }
@@ -475,8 +525,23 @@ function renderEventForm(container, editEvent) {
     const fin = getFinancialSummary();
     const valorEventoEl = container.querySelector('#valorEventoCalculado');
     if (valorEventoEl) valorEventoEl.value = formatCurrency(fin.valorEvento);
-    const summary = container.querySelector('#financialSummary');
-    if (summary) summary.innerHTML = renderFinancialSummary();
+
+    const setText = (id, value) => {
+      const el = container.querySelector(id);
+      if (el) el.textContent = value;
+    };
+    setText('#finValorRestaurante', formatCurrency(fin.valorEvento));
+    setText('#finFeeMedico', formatCurrency(fin.feeMedico));
+    setText('#finExtras', formatCurrency(fin.somaExtras));
+    setText('#finSubtotal', formatCurrency(fin.subtotal));
+    setText('#finFeePerfect', formatCurrency(fin.feeCliente));
+    setText('#finCustoTotal', formatCurrency(fin.base));
+    setText('#finImpostosPct', String(fin.impostosPct));
+    setText('#finImpostos', formatCurrency(fin.impostos));
+    setText('#finBudget', formatCurrency(fin.valorFinal));
+
+    const feeLabel = container.querySelector('#feeValorEventoLabel');
+    if (feeLabel) feeLabel.textContent = getFeeValorLabel();
   }
 
   function bindEvents() {
@@ -514,18 +579,14 @@ function renderEventForm(container, editEvent) {
     container.querySelector('#clienteId')?.addEventListener('change', () => {
       syncFormToEvent();
       updateClienteDependentFields();
+      render();
+    });
+
+    container.querySelector('#feeTipoEvento')?.addEventListener('change', () => {
+      syncFormToEvent();
+      const label = container.querySelector('#feeValorEventoLabel');
+      if (label) label.textContent = getFeeValorLabel();
       updateFinancialDisplay();
-      const hintEl = container.querySelector('.form-hint');
-      if (event.clienteId) {
-        const extra = getRequiredFieldsForClient(event.clienteId);
-        const formHint = container.querySelector('#clientRequiredHint');
-        if (formHint) {
-          formHint.textContent = extra.length
-            ? `Campos obrigatórios deste cliente: ${extra.map(getFieldLabel).join(', ')}`
-            : '';
-          formHint.style.display = extra.length ? '' : 'none';
-        }
-      }
     });
 
     container.querySelectorAll('.calc-trigger').forEach(el => {
@@ -591,6 +652,9 @@ function renderEventForm(container, editEvent) {
       telefoneMedico: event.telefoneMedico,
       emailMedico: event.emailMedico,
       feeMedico: parseFloat(event.feeMedico) || 0,
+      feeTipoEvento: event.feeTipoEvento || 'fixo',
+      feeValorEvento: parseFloat(event.feeValorEvento) || 0,
+      impostosPercentualEvento: parseFloat(event.impostosPercentualEvento) || 0,
       extras: event.extras || [],
       ...fin
     };

@@ -108,19 +108,25 @@ function calculateValorFinal(eventData, clienteId) {
   const subtotal = valorEvento + somaExtras + feeMedico;
 
   const client = getClientById(clienteId);
+  const feeTipo = eventData.feeTipoEvento || (client && client.feeTipo) || 'fixo';
+  const feeValor = eventData.feeValorEvento !== undefined && eventData.feeValorEvento !== null && eventData.feeValorEvento !== ''
+    ? parseFloat(eventData.feeValorEvento) || 0
+    : (client ? (parseFloat(client.feeValor) || 0) : 0);
+  const impostosPct = eventData.impostosPercentualEvento !== undefined && eventData.impostosPercentualEvento !== null && eventData.impostosPercentualEvento !== ''
+    ? parseFloat(eventData.impostosPercentualEvento) || 0
+    : (client ? (parseFloat(client.impostosPercentual) || 0) : 0);
+
   let feeCliente = 0;
-  if (client) {
-    if (client.feeTipo === 'percentual') {
-      feeCliente = subtotal * ((parseFloat(client.feeValor) || 0) / 100);
-    } else {
-      feeCliente = parseFloat(client.feeValor) || 0;
-    }
+  if (feeTipo === 'percentual') {
+    feeCliente = subtotal * (feeValor / 100);
+  } else {
+    feeCliente = feeValor;
   }
 
   const base = subtotal + feeCliente;
-  const impostosPct = client ? (parseFloat(client.impostosPercentual) || 0) : 0;
-  const impostos = base * (impostosPct / 100);
-  const valorFinal = base + impostos;
+  const divisor = 1 - (impostosPct / 100);
+  const valorFinal = divisor > 0 ? base / divisor : base;
+  const impostos = valorFinal - base;
 
   return {
     valorEvento,
@@ -128,6 +134,8 @@ function calculateValorFinal(eventData, clienteId) {
     feeMedico,
     subtotal,
     feeCliente,
+    feeTipo,
+    feeValor,
     base,
     impostos,
     impostosPct,

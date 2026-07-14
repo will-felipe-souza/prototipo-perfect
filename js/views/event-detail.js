@@ -107,11 +107,13 @@ function renderEventDetail(container, eventId) {
         <div class="card__header">Resumo financeiro (Budget)</div>
         <div class="card__body">
           <div class="financial-summary">
-            <div class="financial-summary__row"><span>Valor evento</span><span>${formatCurrency(event.valorEvento)}</span></div>
-            <div class="financial-summary__row"><span>Extras</span><span>${formatCurrency(event.somaExtras)}</span></div>
+            <div class="financial-summary__row"><span>Valor restaurante</span><span>${formatCurrency(event.valorEvento)}</span></div>
             <div class="financial-summary__row"><span>Fee médico</span><span>${formatCurrency(event.feeMedico)}</span></div>
+            <div class="financial-summary__row"><span>Extras</span><span>${formatCurrency(event.somaExtras)}</span></div>
             <div class="financial-summary__row"><span>Subtotal</span><span>${formatCurrency(event.subtotal)}</span></div>
-            <div class="financial-summary__row"><span>Fee Perfect${client ? ` (${client.feeTipo === 'percentual' ? client.feeValor + '%' : formatCurrency(client.feeValor)})` : ''}</span><span>${formatCurrency(event.feeCliente)}</span></div>
+            <div class="financial-summary__row"><span>Tipo de fee</span><span>${event.feeTipo === 'percentual' || event.feeTipoEvento === 'percentual' ? 'Percentual (%)' : 'Valor fixo (R$)'}</span></div>
+            <div class="financial-summary__row"><span>Fee${(event.feeTipoEvento || event.feeTipo) === 'percentual' ? ` (${event.feeValorEvento != null ? event.feeValorEvento : event.feeValor}%)` : ''}</span><span>${formatCurrency(event.feeCliente)}</span></div>
+            <div class="financial-summary__row"><span>Custo total</span><span>${formatCurrency(event.base)}</span></div>
             <div class="financial-summary__row"><span>Impostos (${event.impostosPct}%)</span><span>${formatCurrency(event.impostos)}</span></div>
             <div class="financial-summary__row financial-summary__row--total"><span>Valor Final (Budget)</span><span>${formatCurrency(event.valorFinal)}</span></div>
           </div>
