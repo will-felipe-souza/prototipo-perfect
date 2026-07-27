@@ -18,6 +18,8 @@ function renderFechamentoDetail(container, fechamentoId) {
     })
     .filter(Boolean);
 
+  const showRecebimento = fechamento.status === 'recebido';
+
   container.innerHTML = `
     <div class="detail-header">
       <div class="detail-header__info">
@@ -74,6 +76,29 @@ function renderFechamentoDetail(container, fechamentoId) {
         </div>
       </div>
 
+      <div class="card">
+        <div class="card__header">Nota Fiscal</div>
+        <div class="card__body">
+          ${renderNFAnexoContent(fechamento.nf, { attachBtnId: 'attachNF', removeBtnId: 'removeNF' })}
+          ${fechamento.nf ? renderNFFieldsHtml(fechamento.nf, fechamento.valorTotal, { idPrefix: 'detail' }) : ''}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">Pagamento</div>
+        <div class="card__body">
+          ${renderPagamentoFieldsHtml(fechamento.pagamento, { idPrefix: 'detail', showRecebimento })}
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card__header">Observações</div>
+        <div class="card__body">
+          <textarea class="textarea" id="fechamentoObservacao" rows="4"
+            placeholder="Anotações do financeiro sobre este fechamento...">${escapeHtml(fechamento.observacao || '')}</textarea>
+        </div>
+      </div>
+
       <div class="card" style="grid-column: 1 / -1;">
         <div class="card__header">Eventos (${events.length})</div>
         <div class="card__body" style="padding: 0;">
@@ -127,6 +152,62 @@ function renderFechamentoDetail(container, fechamentoId) {
     }
 
     renderFechamentoDetail(container, fechamento.id);
+  });
+
+  container.querySelector('#attachNF')?.addEventListener('click', () => {
+    const updated = attachFechamentoNF(fechamento.id);
+    if (!updated) return;
+
+    if (typeof showToast === 'function') {
+      showToast('NF anexada (simulação)');
+    }
+
+    renderFechamentoDetail(container, fechamento.id);
+  });
+
+  container.querySelector('#removeNF')?.addEventListener('click', () => {
+    removeFechamentoNF(fechamento.id);
+    renderFechamentoDetail(container, fechamento.id);
+  });
+
+  container.querySelector('#detailnfNumero')?.addEventListener('blur', (ev) => {
+    const current = fechamento.nf?.numero || '';
+    if (ev.target.value === current) return;
+    updateFechamentoNF(fechamento.id, { numero: ev.target.value });
+    if (typeof showToast === 'function') showToast('NF atualizada!');
+  });
+
+  container.querySelector('#detailnfDataEmissao')?.addEventListener('change', (ev) => {
+    updateFechamentoNF(fechamento.id, { dataEmissao: ev.target.value });
+    if (typeof showToast === 'function') showToast('NF atualizada!');
+  });
+
+  container.querySelector('#detailnfValor')?.addEventListener('blur', (ev) => {
+    const valor = parseFloat(ev.target.value) || 0;
+    if (valor === fechamento.nf?.valor) return;
+    updateFechamentoNF(fechamento.id, { valor });
+    if (typeof showToast === 'function') showToast('NF atualizada!');
+  });
+
+  container.querySelector('#detailprazoPagamento')?.addEventListener('change', (ev) => {
+    updateFechamentoPagamento(fechamento.id, { prazoPagamento: ev.target.value });
+    if (typeof showToast === 'function') showToast('Pagamento atualizado!');
+  });
+
+  container.querySelector('#detaildataRecebimento')?.addEventListener('change', (ev) => {
+    updateFechamentoPagamento(fechamento.id, { dataRecebimento: ev.target.value });
+    if (typeof showToast === 'function') showToast('Data de recebimento atualizada!');
+  });
+
+  container.querySelector('#fechamentoObservacao')?.addEventListener('blur', (ev) => {
+    const value = ev.target.value;
+    if (value === (fechamento.observacao || '')) return;
+
+    updateFechamentoObservacao(fechamento.id, value);
+
+    if (typeof showToast === 'function') {
+      showToast('Observações salvas!');
+    }
   });
 
   container.querySelectorAll('tr[data-href]').forEach(row => {

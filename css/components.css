@@ -169,7 +169,8 @@
 }
 
 .input,
-.select {
+.select,
+.textarea {
   padding: 8px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
@@ -181,14 +182,16 @@
 }
 
 .input:focus,
-.select:focus {
+.select:focus,
+.textarea:focus {
   outline: none;
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px rgba(232, 168, 56, 0.2);
 }
 
 .select:disabled,
-.input:disabled {
+.input:disabled,
+.textarea:disabled {
   background: var(--color-bg);
   color: var(--color-text-muted);
   cursor: not-allowed;
@@ -197,6 +200,13 @@
 .input--search {
   min-width: 260px;
   flex: 1;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  line-height: 1.5;
 }
 
 /* Form */
@@ -504,6 +514,56 @@
   background: var(--color-bg);
   border-radius: var(--radius);
   font-size: 0.875rem;
+}
+
+/* File attachment (simulação) */
+.file-attachment {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.file-attachment__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.file-attachment__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.file-attachment__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-attachment__date {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.btn--secondary svg {
+  vertical-align: middle;
+  margin-right: 6px;
 }
 
 @media (max-width: 768px) {
