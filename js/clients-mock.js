@@ -6,7 +6,6 @@ const MOCK_CLIENTS = [
     feeValor: 3000,
     impostosPercentual: 15,
     produtos: ['Momenta 10mg', 'Momenta 20mg'],
-    solicitantes: ['Harle da Costa', 'Carlos Tadeu'],
     camposObrigatorios: ['medico', 'nomeRestaurante', 'feeMedico']
   },
   {
@@ -16,7 +15,6 @@ const MOCK_CLIENTS = [
     feeValor: 12,
     impostosPercentual: 18,
     produtos: ['PharmaX', 'PharmaY'],
-    solicitantes: ['Fernanda Lima', 'Roberto Mendes'],
     camposObrigatorios: ['medico', 'nomeEvento']
   },
   {
@@ -26,7 +24,6 @@ const MOCK_CLIENTS = [
     feeValor: 2800,
     impostosPercentual: 15,
     produtos: ['LabMed 5mg'],
-    solicitantes: ['Patricia Souza'],
     camposObrigatorios: ['nomeRestaurante']
   },
   {
@@ -36,7 +33,6 @@ const MOCK_CLIENTS = [
     feeValor: 3500,
     impostosPercentual: 17,
     produtos: ['BioCell', 'BioVita'],
-    solicitantes: ['Lucas Ferreira', 'Marcos Vieira'],
     camposObrigatorios: ['medico', 'nomeRestaurante', 'nomeEvento']
   },
   {
@@ -46,7 +42,6 @@ const MOCK_CLIENTS = [
     feeValor: 2000,
     impostosPercentual: 12,
     produtos: ['FarmaSC Plus'],
-    solicitantes: ['Mariana Costa'],
     camposObrigatorios: []
   }
 ];

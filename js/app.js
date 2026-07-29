@@ -4,37 +4,55 @@ const ROUTES = {
   '/eventos/novo': { title: 'Novo Evento', render: (c) => renderEventForm(c) },
   '/clientes': { title: 'Clientes', render: renderClientList, action: { label: 'Novo cliente', href: '#/clientes/novo' } },
   '/clientes/novo': { title: 'Novo Cliente', render: (c) => renderClientForm(c) },
+  '/usuarios': { title: 'Usuários', render: renderUserList, action: { label: 'Novo usuário', href: '#/usuarios/novo' } },
+  '/usuarios/novo': { title: 'Novo Usuário', render: (c, params) => renderUserForm(c, null, params) },
   '/fechamentos': { title: 'Fechamento', render: renderFechamentoList, action: { label: 'Novo fechamento', href: '#/fechamentos/novo' } },
   '/fechamentos/novo': { title: 'Novo Fechamento', render: (c) => renderFechamentoForm(c) }
 };
 
 function parseRoute() {
   const hash = window.location.hash.slice(1) || '/';
-  const parts = hash.split('/').filter(Boolean);
+  const [pathPart, queryPart] = hash.split('?');
+  const parts = pathPart.split('/').filter(Boolean);
+  const query = {};
 
-  if (parts.length === 0) return { path: '/', params: {} };
+  if (queryPart) {
+    queryPart.split('&').forEach(pair => {
+      const [key, value] = pair.split('=');
+      if (key) query[decodeURIComponent(key)] = decodeURIComponent(value || '');
+    });
+  }
+
+  if (parts.length === 0) return { path: '/', params: {}, query };
 
   if (parts[0] === 'eventos') {
-    if (parts.length === 1) return { path: '/eventos', params: {} };
-    if (parts[1] === 'novo') return { path: '/eventos/novo', params: {} };
-    if (parts[2] === 'editar') return { path: '/eventos/editar', params: { id: parts[1] } };
-    if (parts.length === 2) return { path: '/eventos/detail', params: { id: parts[1] } };
+    if (parts.length === 1) return { path: '/eventos', params: {}, query };
+    if (parts[1] === 'novo') return { path: '/eventos/novo', params: {}, query };
+    if (parts[2] === 'editar') return { path: '/eventos/editar', params: { id: parts[1] }, query };
+    if (parts.length === 2) return { path: '/eventos/detail', params: { id: parts[1] }, query };
   }
 
   if (parts[0] === 'clientes') {
-    if (parts.length === 1) return { path: '/clientes', params: {} };
-    if (parts[1] === 'novo') return { path: '/clientes/novo', params: {} };
-    if (parts[2] === 'editar') return { path: '/clientes/editar', params: { id: parts[1] } };
-    if (parts.length === 2) return { path: '/clientes/detail', params: { id: parts[1] } };
+    if (parts.length === 1) return { path: '/clientes', params: {}, query };
+    if (parts[1] === 'novo') return { path: '/clientes/novo', params: {}, query };
+    if (parts[2] === 'editar') return { path: '/clientes/editar', params: { id: parts[1] }, query };
+    if (parts.length === 2) return { path: '/clientes/detail', params: { id: parts[1] }, query };
+  }
+
+  if (parts[0] === 'usuarios') {
+    if (parts.length === 1) return { path: '/usuarios', params: {}, query };
+    if (parts[1] === 'novo') return { path: '/usuarios/novo', params: {}, query };
+    if (parts[2] === 'editar') return { path: '/usuarios/editar', params: { id: parts[1] }, query };
+    if (parts.length === 2) return { path: '/usuarios/detail', params: { id: parts[1] }, query };
   }
 
   if (parts[0] === 'fechamentos') {
-    if (parts.length === 1) return { path: '/fechamentos', params: {} };
-    if (parts[1] === 'novo') return { path: '/fechamentos/novo', params: {} };
-    if (parts.length === 2) return { path: '/fechamentos/detail', params: { id: parts[1] } };
+    if (parts.length === 1) return { path: '/fechamentos', params: {}, query };
+    if (parts[1] === 'novo') return { path: '/fechamentos/novo', params: {}, query };
+    if (parts.length === 2) return { path: '/fechamentos/detail', params: { id: parts[1] }, query };
   }
 
-  return { path: '/', params: {} };
+  return { path: '/', params: {}, query };
 }
 
 function updateSidebarActive(path) {
@@ -45,6 +63,7 @@ function updateSidebarActive(path) {
     if (route === '/') active = path === '/';
     else if (route === '/eventos') active = path.startsWith('/eventos');
     else if (route === '/clientes') active = path.startsWith('/clientes');
+    else if (route === '/usuarios') active = path.startsWith('/usuarios');
     else if (route === '/fechamentos') active = path.startsWith('/fechamentos');
 
     item.classList.toggle('nav-item--active', active);
@@ -77,6 +96,19 @@ function updateHeader(route) {
 
   if (route.path === '/clientes/editar') {
     titleEl.textContent = 'Editar Cliente';
+    actionsEl.innerHTML = '';
+    return;
+  }
+
+  if (route.path === '/usuarios/detail') {
+    const user = getUserById(route.params.id);
+    titleEl.textContent = user ? user.nome : 'Usuário';
+    actionsEl.innerHTML = `<a href="#/usuarios/novo" class="btn btn--primary">Novo usuário</a>`;
+    return;
+  }
+
+  if (route.path === '/usuarios/editar') {
+    titleEl.textContent = 'Editar Usuário';
     actionsEl.innerHTML = '';
     return;
   }
@@ -149,13 +181,38 @@ function render() {
     return;
   }
 
+  if (route.path === '/usuarios/detail') {
+    renderUserDetail(container, route.params.id);
+    return;
+  }
+
+  if (route.path === '/usuarios/editar') {
+    const user = getUserById(route.params.id);
+    if (user && isStoredUser(user.id)) {
+      renderUserForm(container, user);
+    } else {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state__title">Edição não disponível</div>
+          <div class="empty-state__text">Apenas usuários criados por você podem ser editados.</div>
+          <a href="#/usuarios/${route.params.id}" class="btn btn--secondary">Ver usuário</a>
+        </div>
+      `;
+    }
+    return;
+  }
+
   if (route.path === '/fechamentos/detail') {
     renderFechamentoDetail(container, route.params.id);
     return;
   }
 
   const config = ROUTES[route.path] || ROUTES['/'];
-  config.render(container);
+  if (config.render.length > 1) {
+    config.render(container, route.params, route.query);
+  } else {
+    config.render(container);
+  }
 }
 
 function initSidebar() {

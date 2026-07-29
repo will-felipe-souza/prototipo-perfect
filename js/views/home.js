@@ -44,7 +44,7 @@ function renderHome(container) {
                 ${recent.map(e => `
                   <tr data-href="#/eventos/${e.id}">
                     <td><span class="table__link">${escapeHtml(e.eventoId)}</span></td>
-                    <td>${escapeHtml(e.atendimento)}</td>
+                    <td>${escapeHtml(getAtendimentoNome(e))}</td>
                     <td>${escapeHtml(formatNomeEventoCidade(e))}</td>
                     <td><span class="${getStatusBadgeClass(e.status)}">${formatStatus(e.status)}</span></td>
                     <td>${formatCurrency(e.valorFinal)}</td>

@@ -7,8 +7,8 @@ function renderEventForm(container, editEvent) {
     tipoEvento: '',
     status: 'aberto',
     clienteId: '',
-    atendimento: '',
-    solicitante: '',
+    atendimentoUserId: '',
+    solicitanteUserId: '',
     produto: '',
     dataSolicitacao: new Date().toISOString().split('T')[0],
     nomeEvento: '',
@@ -53,8 +53,7 @@ function renderEventForm(container, editEvent) {
   }
 
   function getSolicitantesForCliente(clienteId) {
-    const client = getClientById(clienteId);
-    return client ? (client.solicitantes || []) : [];
+    return getUsersByClienteId(clienteId);
   }
 
   function renderSolicitanteSelectHtml() {
@@ -62,7 +61,7 @@ function renderEventForm(container, editEvent) {
 
     if (!event.clienteId) {
       return `
-        <select class="select" name="solicitante" id="solicitante" disabled>
+        <select class="select" name="solicitanteUserId" id="solicitanteUserId" disabled>
           <option value="">Selecione um cliente primeiro</option>
         </select>
       `;
@@ -70,24 +69,25 @@ function renderEventForm(container, editEvent) {
 
     if (solicitantes.length === 0) {
       return `
-        <select class="select" name="solicitante" id="solicitante" disabled>
+        <select class="select" name="solicitanteUserId" id="solicitanteUserId" disabled>
           <option value="">Nenhum solicitante cadastrado</option>
         </select>
-        <span class="form-hint">Cadastre solicitantes no cliente selecionado.</span>
+        <span class="form-hint">Cadastre usuários vinculados a este cliente.</span>
       `;
     }
 
-    const currentInList = solicitantes.includes(event.solicitante);
-    const legacyOption = event.solicitante && !currentInList
-      ? `<option value="${escapeHtml(event.solicitante)}" selected>${escapeHtml(event.solicitante)}</option>`
+    const currentInList = solicitantes.some(u => u.id === event.solicitanteUserId);
+    const legacyUser = event.solicitanteUserId && !currentInList ? getUserById(event.solicitanteUserId) : null;
+    const legacyOption = legacyUser
+      ? `<option value="${escapeHtml(legacyUser.id)}" selected>${escapeHtml(legacyUser.nome)}</option>`
       : '';
 
     return `
-      <select class="select" name="solicitante" id="solicitante">
+      <select class="select" name="solicitanteUserId" id="solicitanteUserId">
         <option value="">Selecione...</option>
         ${legacyOption}
-        ${solicitantes.map(s => `
-          <option value="${escapeHtml(s)}" ${event.solicitante === s ? 'selected' : ''}>${escapeHtml(s)}</option>
+        ${solicitantes.map(u => `
+          <option value="${escapeHtml(u.id)}" ${event.solicitanteUserId === u.id ? 'selected' : ''}>${escapeHtml(u.nome)}</option>
         `).join('')}
       </select>
     `;
@@ -96,6 +96,44 @@ function renderEventForm(container, editEvent) {
   function updateSolicitanteSelect() {
     const field = container.querySelector('#solicitanteField');
     if (field) field.innerHTML = renderSolicitanteSelectHtml();
+  }
+
+  function getAtendimentoOptions() {
+    return getAgencyUsers();
+  }
+
+  function renderAtendimentoSelectHtml() {
+    const options = getAtendimentoOptions();
+
+    if (options.length === 0) {
+      return `
+        <select class="select" name="atendimentoUserId" id="atendimentoUserId" disabled>
+          <option value="">Nenhum usuário da agência cadastrado</option>
+        </select>
+        <span class="form-hint">Cadastre usuários da agência no módulo Usuários.</span>
+      `;
+    }
+
+    const currentInList = options.some(u => u.id === event.atendimentoUserId);
+    const legacyUser = event.atendimentoUserId && !currentInList ? getUserById(event.atendimentoUserId) : null;
+    const legacyOption = legacyUser
+      ? `<option value="${escapeHtml(legacyUser.id)}" selected>${escapeHtml(legacyUser.nome)}</option>`
+      : '';
+
+    return `
+      <select class="select" name="atendimentoUserId" id="atendimentoUserId">
+        <option value="">Selecione...</option>
+        ${legacyOption}
+        ${options.map(u => `
+          <option value="${escapeHtml(u.id)}" ${event.atendimentoUserId === u.id ? 'selected' : ''}>${escapeHtml(u.nome)}</option>
+        `).join('')}
+      </select>
+    `;
+  }
+
+  function updateAtendimentoSelect() {
+    const field = container.querySelector('#atendimentoField');
+    if (field) field.innerHTML = renderAtendimentoSelectHtml();
   }
 
   function getProdutosForCliente(clienteId) {
@@ -148,8 +186,10 @@ function renderEventForm(container, editEvent) {
     const solicitantes = getSolicitantesForCliente(event.clienteId);
     const produtos = getProdutosForCliente(event.clienteId);
 
-    if (event.solicitante && !solicitantes.includes(event.solicitante)) {
-      event.solicitante = '';
+    const solicitanteIds = solicitantes.map(u => u.id);
+
+    if (event.solicitanteUserId && !solicitanteIds.includes(event.solicitanteUserId)) {
+      event.solicitanteUserId = '';
     }
     if (event.produto && !produtos.includes(event.produto)) {
       event.produto = '';
@@ -351,7 +391,7 @@ function renderEventForm(container, editEvent) {
                 </div>
                 <div class="form-group">
                   <label class="form-label">Atendimento</label>
-                  <input type="text" class="input" name="atendimento" value="${escapeHtml(event.atendimento)}">
+                  <div id="atendimentoField">${renderAtendimentoSelectHtml()}</div>
                 </div>
                 <div class="form-group">
                   <label class="form-label form-label--required">Data solicitação</label>
@@ -493,8 +533,8 @@ function renderEventForm(container, editEvent) {
       tipoEvento,
       status: data.get('status'),
       clienteId: data.get('clienteId'),
-      atendimento: data.get('atendimento'),
-      solicitante: data.get('solicitante'),
+      atendimentoUserId: data.get('atendimentoUserId'),
+      solicitanteUserId: data.get('solicitanteUserId'),
       produto: data.get('produto'),
       dataSolicitacao: data.get('dataSolicitacao'),
       nomeEvento: data.get('nomeEvento'),
@@ -633,8 +673,8 @@ function renderEventForm(container, editEvent) {
       tipoEvento: event.tipoEvento,
       status: event.status,
       clienteId: event.clienteId,
-      atendimento: event.atendimento,
-      solicitante: event.solicitante,
+      atendimentoUserId: event.atendimentoUserId || '',
+      solicitanteUserId: event.solicitanteUserId || '',
       produto: event.produto,
       dataSolicitacao: event.dataSolicitacao,
       nomeEvento: event.nomeEvento,

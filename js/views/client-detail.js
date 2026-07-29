@@ -13,6 +13,7 @@ function renderClientDetail(container, clientId) {
 
   const canEdit = isStoredClient(client.id);
   const events = getAllEvents().filter(e => e.clienteId === client.id);
+  const linkedUsers = getUsersByClienteId(client.id);
 
   container.innerHTML = `
     <div class="detail-header">
@@ -36,12 +37,15 @@ function renderClientDetail(container, clientId) {
       </div>
 
       <div class="card">
-        <div class="card__header">Solicitantes (${(client.solicitantes || []).length})</div>
+        <div class="card__header">Usuários vinculados (${linkedUsers.length})</div>
         <div class="card__body">
-          ${(client.solicitantes || []).length === 0
-            ? '<span class="detail-item__value--empty">Nenhum solicitante cadastrado</span>'
-            : `<ul class="product-list">${client.solicitantes.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ul>`
+          ${linkedUsers.length === 0
+            ? '<span class="detail-item__value--empty">Nenhum usuário vinculado</span>'
+            : `<ul class="product-list">${linkedUsers.map(u => `
+                <li><a href="#/usuarios/${u.id}" class="table__link">${escapeHtml(u.nome)}</a> — ${escapeHtml(u.email)}</li>
+              `).join('')}</ul>`
           }
+          <a href="#/usuarios/novo?clienteId=${client.id}" class="btn btn--secondary" style="margin-top: 12px;">+ Adicionar usuário</a>
         </div>
       </div>
 

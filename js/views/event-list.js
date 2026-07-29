@@ -14,11 +14,11 @@ function renderEventList(container) {
       events = events.filter(e =>
         (e.eventoId || '').toLowerCase().includes(q) ||
         (getClientName(e.clienteId) || '').toLowerCase().includes(q) ||
-        (e.solicitante || '').toLowerCase().includes(q) ||
+        (getSolicitanteNome(e) || '').toLowerCase().includes(q) ||
         (e.nomeEvento || '').toLowerCase().includes(q) ||
         (e.cidade || '').toLowerCase().includes(q) ||
         (e.estado || '').toLowerCase().includes(q) ||
-        (e.atendimento || '').toLowerCase().includes(q)
+        (getAtendimentoNome(e) || '').toLowerCase().includes(q)
       );
     }
 
@@ -64,8 +64,8 @@ function renderEventList(container) {
                   ${events.map(e => `
                     <tr data-href="#/eventos/${e.id}">
                       <td><span class="table__link">${escapeHtml(e.eventoId)}</span></td>
-                      <td>${escapeHtml(e.atendimento)}</td>
-                      <td>${escapeHtml(e.solicitante)}</td>
+                      <td>${escapeHtml(getAtendimentoNome(e))}</td>
+                      <td>${escapeHtml(getSolicitanteNome(e))}</td>
                       <td>${formatDate(e.dataSolicitacao)}</td>
                       <td>${escapeHtml(formatNomeEventoCidade(e))}</td>
                       <td>${formatDate(e.data)}</td>

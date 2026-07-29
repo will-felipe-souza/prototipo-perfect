@@ -123,7 +123,7 @@ function renderFechamentoDetail(container, fechamentoId) {
                   ${events.map(e => `
                     <tr data-href="#/eventos/${e.id}">
                       <td><span class="table__link">${escapeHtml(e.eventoId)}</span></td>
-                      <td>${escapeHtml(e.solicitante || '—')}</td>
+                      <td>${escapeHtml(getSolicitanteNome(e))}</td>
                       <td>${escapeHtml(e.produto || '—')}</td>
                       <td><span class="${getStatusBadgeClass(e.status)}">${formatStatus(e.status)}</span></td>
                       <td>${formatDate(e.data)}</td>

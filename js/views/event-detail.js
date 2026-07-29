@@ -47,8 +47,8 @@ function renderEventDetail(container, eventId) {
           ${detailItem('ID', event.eventoId)}
           ${detailItem('Tipo', formatTipoEvento(event.tipoEvento))}
           ${detailItem('Cliente', client ? client.nome : '—')}
-          ${detailItem('Atendimento', event.atendimento)}
-          ${detailItem('Solicitante', event.solicitante)}
+          ${detailItem('Atendimento', getAtendimentoNome(event))}
+          ${detailItem('Solicitante', getSolicitanteNome(event))}
           ${detailItem('Produto', event.produto)}
           ${detailItem('Data solicitação', formatDate(event.dataSolicitacao))}
           ${detailItem('Nome do evento', event.nomeEvento)}

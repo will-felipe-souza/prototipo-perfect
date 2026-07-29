@@ -22,7 +22,7 @@ function renderFechamentoList(container) {
       events = events.filter(e =>
         (e.eventoId || '').toLowerCase().includes(q) ||
         (getClientName(e.clienteId) || '').toLowerCase().includes(q) ||
-        (e.solicitante || '').toLowerCase().includes(q) ||
+        (getSolicitanteNome(e) || '').toLowerCase().includes(q) ||
         (e.produto || '').toLowerCase().includes(q)
       );
     }
@@ -72,7 +72,7 @@ function renderFechamentoList(container) {
                     <tr>
                       <td>${escapeHtml(e.eventoId)}</td>
                       <td>${escapeHtml(getClientName(e.clienteId))}</td>
-                      <td>${escapeHtml(e.solicitante || '—')}</td>
+                      <td>${escapeHtml(getSolicitanteNome(e))}</td>
                       <td>${escapeHtml(e.produto || '—')}</td>
                       <td><span class="${getStatusBadgeClass(e.status)}">${formatStatus(e.status)}</span></td>
                       <td>${formatDate(e.data)}</td>

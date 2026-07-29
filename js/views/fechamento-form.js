@@ -1,6 +1,6 @@
 function renderFechamentoForm(container) {
   let clienteId = '';
-  let solicitante = '';
+  let solicitanteUserId = '';
   let produto = '';
   let selectedIds = new Set();
   let nf = null;
@@ -19,7 +19,7 @@ function renderFechamentoForm(container) {
   function getFilteredEvents() {
     return getEventosSemFechamento({
       clienteId: clienteId || undefined,
-      solicitante: solicitante || undefined,
+      solicitanteUserId: solicitanteUserId || undefined,
       produto: produto || undefined
     });
   }
@@ -42,7 +42,15 @@ function renderFechamentoForm(container) {
   function render() {
     const clients = getAllClients();
     const eligible = getEligibleForClient();
-    const solicitantes = uniqueSorted(eligible.map(e => e.solicitante));
+    const solicitanteMap = new Map();
+    eligible.forEach(e => {
+      if (e.solicitanteUserId) {
+        solicitanteMap.set(e.solicitanteUserId, getUserName(e.solicitanteUserId));
+      }
+    });
+    const solicitantes = [...solicitanteMap.entries()]
+      .map(([id, nome]) => ({ id, nome }))
+      .sort((a, b) => a.nome.localeCompare(b.nome));
     const produtos = uniqueSorted(eligible.map(e => e.produto));
     const events = clienteId ? getFilteredEvents() : [];
     pruneSelection(events);
@@ -70,7 +78,7 @@ function renderFechamentoForm(container) {
               <select class="select" id="solicitanteSelect" ${!clienteId ? 'disabled' : ''}>
                 <option value="">Todos</option>
                 ${solicitantes.map(s => `
-                  <option value="${escapeHtml(s)}" ${solicitante === s ? 'selected' : ''}>${escapeHtml(s)}</option>
+                  <option value="${escapeHtml(s.id)}" ${solicitanteUserId === s.id ? 'selected' : ''}>${escapeHtml(s.nome)}</option>
                 `).join('')}
               </select>
             </div>
@@ -121,7 +129,7 @@ function renderFechamentoForm(container) {
                       </td>
                       <td>${escapeHtml(e.eventoId)}</td>
                       <td>${escapeHtml(getClientName(e.clienteId))}</td>
-                      <td>${escapeHtml(e.solicitante || '—')}</td>
+                      <td>${escapeHtml(getSolicitanteNome(e))}</td>
                       <td>${escapeHtml(e.produto || '—')}</td>
                       <td><span class="${getStatusBadgeClass(e.status)}">${formatStatus(e.status)}</span></td>
                       <td>${formatDate(e.data)}</td>
@@ -173,14 +181,14 @@ function renderFechamentoForm(container) {
 
     container.querySelector('#clienteSelect')?.addEventListener('change', (ev) => {
       clienteId = ev.target.value;
-      solicitante = '';
+      solicitanteUserId = '';
       produto = '';
       selectedIds = new Set();
       render();
     });
 
     container.querySelector('#solicitanteSelect')?.addEventListener('change', (ev) => {
-      solicitante = ev.target.value;
+      solicitanteUserId = ev.target.value;
       render();
     });
 

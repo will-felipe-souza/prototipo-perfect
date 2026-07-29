@@ -6,12 +6,11 @@ function renderClientForm(container, editClient) {
     feeValor: '',
     impostosPercentual: 15,
     produtos: [],
-    solicitantes: [],
     camposObrigatorios: []
   };
 
   let produtos = [...(client.produtos || [])];
-  let solicitantes = [...(client.solicitantes || [])];
+  const linkedUsers = isEdit ? getUsersByClienteId(client.id) : [];
 
   function render() {
     container.innerHTML = `
@@ -42,17 +41,20 @@ function renderClientForm(container, editClient) {
               </div>
             </div>
 
-            <div class="section-title" style="margin-top: 24px;">Solicitantes</div>
-            <p class="form-hint" style="margin-bottom: 12px;">Pessoas que solicitam eventos para este cliente.</p>
-            <div id="solicitantesList">
-              ${solicitantes.map((s, i) => `
-                <div class="extra-row" data-index="${i}">
-                  <input type="text" class="input" name="solicitante_${i}" value="${escapeHtml(s)}" placeholder="Nome do solicitante">
-                  <button type="button" class="btn btn--ghost btn--sm remove-solicitante" data-index="${i}">Remover</button>
-                </div>
-              `).join('')}
-            </div>
-            <button type="button" class="btn btn--secondary" id="addSolicitante" style="margin-top: 8px;">+ Adicionar solicitante</button>
+            ${isEdit ? `
+              <div class="section-title" style="margin-top: 24px;">Usuários vinculados</div>
+              <p class="form-hint" style="margin-bottom: 12px;">Solicitantes deste cliente são gerenciados no módulo de Usuários.</p>
+              ${linkedUsers.length === 0 ? `
+                <p class="form-hint">Nenhum usuário vinculado a este cliente.</p>
+              ` : `
+                <ul class="product-list" style="margin-bottom: 12px;">
+                  ${linkedUsers.map(u => `
+                    <li><a href="#/usuarios/${u.id}" class="table__link">${escapeHtml(u.nome)}</a> — ${escapeHtml(u.email)}</li>
+                  `).join('')}
+                </ul>
+              `}
+              <a href="#/usuarios/novo?clienteId=${client.id}" class="btn btn--secondary">+ Adicionar usuário</a>
+            ` : ''}
 
             <div class="section-title" style="margin-top: 24px;">Produtos</div>
             <div id="produtosList">
@@ -84,8 +86,6 @@ function renderClientForm(container, editClient) {
         </div>
       </div>
     `;
-
-    bindEvents();
   }
 
   function bindEvents() {
@@ -94,27 +94,12 @@ function renderClientForm(container, editClient) {
       label.textContent = e.target.value === 'percentual' ? 'Fee (%)' : 'Fee (R$)';
     });
 
-    container.querySelector('#addSolicitante')?.addEventListener('click', () => {
-      syncGeneralFields();
-      syncSolicitantes();
-      solicitantes.push('');
-      render();
-    });
-
-    container.querySelectorAll('.remove-solicitante').forEach(btn => {
-      btn.addEventListener('click', () => {
-        syncGeneralFields();
-        syncSolicitantes();
-        solicitantes.splice(parseInt(btn.dataset.index, 10), 1);
-        render();
-      });
-    });
-
     container.querySelector('#addProduto')?.addEventListener('click', () => {
       syncGeneralFields();
       syncProdutos();
       produtos.push('');
       render();
+      bindEvents();
     });
 
     container.querySelectorAll('.remove-produto').forEach(btn => {
@@ -123,6 +108,7 @@ function renderClientForm(container, editClient) {
         syncProdutos();
         produtos.splice(parseInt(btn.dataset.index, 10), 1);
         render();
+        bindEvents();
       });
     });
 
@@ -143,13 +129,6 @@ function renderClientForm(container, editClient) {
     client.camposObrigatorios = [...form.querySelectorAll('[name="camposObrigatorios"]:checked')].map(cb => cb.value);
   }
 
-  function syncSolicitantes() {
-    solicitantes = solicitantes.map((_, i) => {
-      const input = container.querySelector(`[name="solicitante_${i}"]`);
-      return input ? input.value.trim() : '';
-    }).filter(Boolean);
-  }
-
   function syncProdutos() {
     produtos = produtos.map((_, i) => {
       const input = container.querySelector(`[name="produto_${i}"]`);
@@ -158,7 +137,6 @@ function renderClientForm(container, editClient) {
   }
 
   function handleSubmit() {
-    syncSolicitantes();
     syncProdutos();
     const form = container.querySelector('#clientForm');
     const data = new FormData(form);
@@ -171,7 +149,6 @@ function renderClientForm(container, editClient) {
       feeValor: parseFloat(data.get('feeValor')) || 0,
       impostosPercentual: parseFloat(data.get('impostosPercentual')) || 0,
       produtos,
-      solicitantes,
       camposObrigatorios
     };
 
@@ -181,4 +158,5 @@ function renderClientForm(container, editClient) {
   }
 
   render();
+  bindEvents();
 }

@@ -116,8 +116,8 @@ function getEventosSemFechamento(filters = {}) {
   if (filters.clienteId) {
     events = events.filter(e => e.clienteId === filters.clienteId);
   }
-  if (filters.solicitante) {
-    events = events.filter(e => (e.solicitante || '') === filters.solicitante);
+  if (filters.solicitanteUserId) {
+    events = events.filter(e => e.solicitanteUserId === filters.solicitanteUserId);
   }
   if (filters.produto) {
     events = events.filter(e => (e.produto || '') === filters.produto);
